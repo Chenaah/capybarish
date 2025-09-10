@@ -1,0 +1,29 @@
+# working real-world training setting
+
+agent:
+  filter_action: false
+
+interface: 
+  module_ids: [20]
+  torso_module_id: 20
+  sources: ["imu", "optitrack"]
+  # sources: ["imu"]
+  motor_range: [-12, 12]
+  struct_format: "iiiififfffffiiifffffffffffffii"
+  protocol: "UDP"
+  kp_ratio: 1.0
+  kd_ratio: 1.0
+  calibration_modes: null
+  broken_motors: null
+  dashboard: false
+  check_action_safety: false
+  enable_filter: true
+  optitrack_rigibody: null
+
+logging:
+  robot_data_dir: null
+
+robot:
+  dt: 0.05
+  motor_range: [-12, 12]
+

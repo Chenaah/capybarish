@@ -1,0 +1,40 @@
+# Include the README and license
+include README.md
+include LICENSE
+include CHANGELOG.md
+
+# Include configuration files
+recursive-include config *.yaml *.yml *.json
+
+# Include example files
+recursive-include examples *.py
+
+# Include plugin files
+recursive-include plugins *.py
+
+# Include package data
+recursive-include capybarish *.yaml *.yml *.json *.txt
+
+# Include type information
+include capybarish/py.typed
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .coverage
+global-exclude .pytest_cache
+global-exclude *.egg-info
+
+# Exclude test files from distribution
+recursive-exclude tests *
+recursive-exclude */tests *
+exclude tox.ini
+exclude .pre-commit-config.yaml
+
+# Exclude development files
+exclude Makefile
+recursive-exclude docs *
+exclude .readthedocs.yml
