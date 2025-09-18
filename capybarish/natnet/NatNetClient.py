@@ -21,7 +21,7 @@ import sys
 import time
 from threading import Thread
 
-from twist_controller.natnet import DataDescriptions, MoCapData
+from . import DataDescriptions, MoCapData
 
 
 def trace(*args):
