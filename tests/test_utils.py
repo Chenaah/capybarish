@@ -299,8 +299,14 @@ class TestCachingUtils:
             with pytest.raises(OSError):
                 load_cached_pings()
 
+    @pytest.mark.unix_only
+    @pytest.mark.skipif(os.name == "nt", reason="Windows has different permission handling")
     def test_cache_pings_permission_error(self, temp_dir):
-        """Test caching when there are permission issues."""
+        """Test caching when there are permission issues.
+        
+        Note: This test is Unix-specific due to different permission models
+        between Windows and Unix-like systems.
+        """
         with patch("capybarish.utils.DEFAULT_CACHE_DIR", "/root/no_permission"):
             test_data = {"host1": 12.34}
 
