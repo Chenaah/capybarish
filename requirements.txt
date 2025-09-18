@@ -1,5 +1,6 @@
 # Core dependencies for Capybarish
 numpy>=1.20.0
+scipy>=1.7.0
 omegaconf>=2.1.0
 msgpack>=1.0.0
 rich>=10.0.0

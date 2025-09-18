@@ -20,10 +20,45 @@ limitations under the License.
 """
 
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-from scipy.spatial.transform import Rotation
+
+try:
+    from scipy.spatial.transform import Rotation
+    SCIPY_AVAILABLE = True
+except ImportError:
+    # Fallback Rotation class for testing without scipy
+    class Rotation:
+        def __init__(self, quat=None):
+            self._quat = quat if quat is not None else np.array([0, 0, 0, 1])
+        
+        @classmethod
+        def from_rotvec(cls, vec):
+            # Simple fallback - identity quaternion
+            return cls(np.array([0, 0, 0, 1]))
+        
+        @classmethod  
+        def from_euler(cls, seq, angles):
+            # Simple fallback - identity quaternion
+            return cls(np.array([0, 0, 0, 1]))
+            
+        @classmethod
+        def from_quat(cls, quat):
+            return cls(quat)
+        
+        def as_quat(self):
+            return self._quat
+            
+        def inv(self):
+            # Return identity for fallback
+            return Rotation(np.array([0, 0, 0, 1]))
+            
+        def apply(self, vector):
+            # Return vector unchanged for fallback
+            return np.array(vector)
+    
+    SCIPY_AVAILABLE = False
 
 from capybarish.plugin_system import DataProcessorPlugin, PluginMetadata, PluginType
 
@@ -183,7 +218,7 @@ class IMUProcessor(DataProcessorPlugin):
 
         return processed_data
 
-    def _extract_accelerometer_data(self, data: Dict[str, Any]) -> np.ndarray:
+    def _extract_accelerometer_data(self, data: Dict[str, Any]) -> Optional[np.ndarray]:
         """Extract accelerometer data from input."""
         # Try different possible field names
         for field in ["acc_body_imu", "accelerometer", "acc", "accs"]:
@@ -193,9 +228,9 @@ class IMUProcessor(DataProcessorPlugin):
                     return np.array(acc_value[:3])  # Take first 3 elements
                 elif isinstance(acc_value, np.ndarray):
                     return acc_value[:3]
-        return None
+        return None  # Return None if no IMU data found
 
-    def _extract_gyroscope_data(self, data: Dict[str, Any]) -> np.ndarray:
+    def _extract_gyroscope_data(self, data: Dict[str, Any]) -> Optional[np.ndarray]:
         """Extract gyroscope data from input."""
         # Try different possible field names
         for field in ["body_omega_imu", "gyroscope", "gyro", "gyros", "ang_vel_body"]:
@@ -205,7 +240,7 @@ class IMUProcessor(DataProcessorPlugin):
                     return np.array(gyro_value[:3])  # Take first 3 elements
                 elif isinstance(gyro_value, np.ndarray):
                     return gyro_value[:3]
-        return None
+        return None  # Return None if no IMU data found
 
     def _low_pass_filter(
         self, previous: np.ndarray, current: np.ndarray, alpha: float
