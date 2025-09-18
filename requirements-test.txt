@@ -1,0 +1,37 @@
+# Testing Requirements for Capybarish
+
+# Core testing framework
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-xdist>=3.0.0  # For parallel test execution
+pytest-mock>=3.10.0
+
+# Mocking and test utilities
+unittest-mock>=1.0.1
+
+# Test reporting
+pytest-html>=3.1.0  # HTML test reports
+pytest-json-report>=1.5.0  # JSON test reports
+
+# Performance testing
+pytest-benchmark>=4.0.0
+
+# Test data generation
+faker>=18.0.0  # For generating test data
+factory-boy>=3.2.0  # For creating test fixtures
+
+# Coverage reporting
+coverage>=7.0.0
+
+# Code quality (optional for testing)
+black>=23.0.0  # Code formatting
+flake8>=6.0.0  # Linting
+mypy>=1.0.0  # Type checking
+
+# For testing specific functionality
+responses>=0.23.0  # Mock HTTP requests
+freezegun>=1.2.0  # Mock time
+pyfakefs>=5.2.0  # Mock filesystem
+
+# Dependencies for mocking hardware interfaces
+pytest-asyncio>=0.21.0  # For async testing if needed

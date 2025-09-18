@@ -157,6 +157,9 @@ class IMUProcessor(DataProcessorPlugin):
                 # Estimate orientation
                 orientation_quat = self._estimate_orientation(self.filtered_acc, self.filtered_gyro)
 
+                # Increment counter first
+                self.samples_processed += 1
+
                 # Add processed data to output
                 processed_data.update(
                     {
@@ -173,8 +176,6 @@ class IMUProcessor(DataProcessorPlugin):
                         },
                     }
                 )
-
-                self.samples_processed += 1
 
         except Exception as e:
             self.last_error = f"Error processing IMU data: {e}"
