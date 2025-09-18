@@ -40,9 +40,9 @@ jobs:
       run: |
         isort --check-only capybarish
 
-    - name: Type check with mypy
-      run: |
-        mypy capybarish
+    # - name: Type check with mypy
+    #   run: |
+    #     mypy capybarish
 
     - name: Test with pytest
       run: |

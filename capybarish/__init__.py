@@ -35,15 +35,16 @@ __author__ = "Chen Yu"
 __email__ = "chenyu@u.northwestern.edu"
 __license__ = "Apache-2.0"
 
+from .dashboard_server import DashboardServer
+from .data_struct import RobotData, RobotDataLite, SentDataStruct
+
 # Import main classes for convenience
 from .interface import Interface
-from .dashboard_server import DashboardServer
 from .utils import load_cfg
-from .data_struct import SentDataStruct, RobotData, RobotDataLite
 
 __all__ = [
     "Interface",
-    "DashboardServer", 
+    "DashboardServer",
     "load_cfg",
     "SentDataStruct",
     "RobotData",

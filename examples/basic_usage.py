@@ -76,7 +76,7 @@ kb: Optional[KBHit] = None
 
 def signal_handler(signum: int, frame) -> None:
     """Handle interrupt signals for graceful shutdown.
-    
+
     Args:
         signum: Signal number
         frame: Current stack frame
@@ -88,23 +88,23 @@ def signal_handler(signum: int, frame) -> None:
 def cleanup_and_exit() -> None:
     """Perform cleanup operations and exit the program."""
     global interface, kb
-    
+
     try:
         if interface is not None:
             print("Disabling motors...")
             interface.switch_on = 0
             # Send a final command to ensure motors are disabled
-            if hasattr(interface, 'send_action'):
+            if hasattr(interface, "send_action"):
                 zero_action = np.zeros(len(interface.cfg.interface.module_ids))
                 interface.send_action(zero_action)
             print("Motors disabled.")
-            
+
         if kb is not None:
             print("Cleaning up keyboard handler...")
             # KBHit cleanup if it has a cleanup method
-            if hasattr(kb, 'set_normal_term'):
+            if hasattr(kb, "set_normal_term"):
                 kb.set_normal_term()
-                
+
     except Exception as e:
         print(f"Error during cleanup: {e}")
     finally:
@@ -114,99 +114,99 @@ def cleanup_and_exit() -> None:
 
 def initialize_system(cfg: DictConfig) -> Interface:
     """Initialize the Capybarish interface system.
-    
+
     Args:
         cfg: Configuration object containing system parameters
-        
+
     Returns:
         Initialized Interface instance
-        
+
     Raises:
         RuntimeError: If initialization fails
     """
     try:
         print("Initializing Capybarish interface...")
         interface = Interface(cfg)
-        
+
         print(f"Collecting initial data for {INITIAL_DATA_COLLECTION_CYCLES} cycles...")
         for i in range(INITIAL_DATA_COLLECTION_CYCLES):
             interface.receive_module_data()
             print(f"  Initial data collection: {i+1}/{INITIAL_DATA_COLLECTION_CYCLES}")
-            
+
         print("System initialization complete!")
         return interface
-        
+
     except Exception as e:
         raise RuntimeError(f"Failed to initialize system: {e}") from e
 
 
 def run_control_loop(cfg: DictConfig) -> None:
     """Run the main control loop with sinusoidal commands and keyboard input.
-    
+
     This function implements the main control loop that:
     1. Receives sensor data from robot modules
     2. Generates sinusoidal position commands
     3. Sends commands to all configured modules
     4. Handles keyboard input for motor control
-    
+
     Args:
         cfg: Configuration object containing system parameters
-        
+
     Raises:
         KeyboardInterrupt: When user requests shutdown
         RuntimeError: If control loop encounters critical errors
     """
     global interface, kb
-    
+
     try:
         # Initialize system components
         interface = initialize_system(cfg)
         kb = KBHit()
-        
+
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
-        
+
         print("\\nStarting control loop...")
         print("Controls: 'e' = enable motors, 'd' = disable motors, Ctrl+C = exit")
         print("=" * 60)
-        
+
         time_step = 0
         num_modules = len(cfg.interface.module_ids)
-        
+
         while True:
             try:
                 # Receive sensor data from all modules
                 interface.receive_module_data()
-                
+
                 # Get observable data (for logging/monitoring)
                 observable_data = interface.get_observable_data()
-                
+
                 # Generate sinusoidal control command
-                sinusoidal_command = SINUSOIDAL_AMPLITUDE * np.sin(time_step / SINUSOIDAL_FREQUENCY_DIVIDER)
+                sinusoidal_command = SINUSOIDAL_AMPLITUDE * np.sin(
+                    time_step / SINUSOIDAL_FREQUENCY_DIVIDER
+                )
                 action_array = np.ones(num_modules) * sinusoidal_command
-                
+
                 # Send control commands to all modules
                 interface.send_action(
-                    action_array,
-                    kps=np.array([DEFAULT_KP_GAIN]),
-                    kds=np.array([DEFAULT_KD_GAIN])
+                    action_array, kps=np.array([DEFAULT_KP_GAIN]), kds=np.array([DEFAULT_KD_GAIN])
                 )
-                
+
                 # Handle keyboard input
                 if kb.kbhit():
                     input_key = kb.getch()
                     handle_keyboard_input(input_key, interface)
-                
+
                 # Control loop timing
                 time.sleep(CONTROL_LOOP_SLEEP_TIME)
                 time_step += 1
-                
+
                 # Optional: Print status every N iterations
                 if time_step % 100 == 0:
                     status = "ENABLED" if interface.switch_on else "DISABLED"
                     print(f"Step {time_step}: Motors {status}, Command: {sinusoidal_command:.3f}")
-                    
+
             except KeyboardInterrupt:
                 print("\\nKeyboard interrupt received...")
                 break
@@ -214,7 +214,7 @@ def run_control_loop(cfg: DictConfig) -> None:
                 print(f"Error in control loop: {e}")
                 # Continue loop for non-critical errors
                 continue
-                
+
     except Exception as e:
         print(f"Critical error in control loop: {e}")
         raise RuntimeError(f"Control loop failed: {e}") from e
@@ -224,7 +224,7 @@ def run_control_loop(cfg: DictConfig) -> None:
 
 def handle_keyboard_input(key: str, interface: Interface) -> None:
     """Handle keyboard input commands.
-    
+
     Args:
         key: Pressed key character
         interface: Interface instance to control
@@ -242,28 +242,24 @@ def handle_keyboard_input(key: str, interface: Interface) -> None:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments.
-    
+
     Returns:
         Parsed arguments namespace
     """
     parser = argparse.ArgumentParser(
         description="Basic usage example for Capybarish motion capture system",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    
+
     parser.add_argument(
-        '--cfg', 
-        type=str, 
+        "--cfg",
+        type=str,
         default=DEFAULT_CONFIG_NAME,
-        help='Configuration file name (without .yaml extension)'
+        help="Configuration file name (without .yaml extension)",
     )
-    
-    parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose output'
-    )
-    
+
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
+
     return parser.parse_args()
 
 
@@ -272,10 +268,10 @@ def main() -> None:
     try:
         # Parse command line arguments
         args = parse_arguments()
-        
+
         if args.verbose:
             print(f"Loading configuration: {args.cfg}")
-        
+
         # Load configuration
         try:
             config = load_cfg(args.cfg)
@@ -286,14 +282,14 @@ def main() -> None:
         except Exception as e:
             print(f"Error loading configuration: {e}")
             sys.exit(1)
-        
+
         if args.verbose:
             print(f"Configuration loaded successfully")
             print(f"Number of modules: {len(config.interface.module_ids)}")
-        
+
         # Run the main control loop
         run_control_loop(config)
-        
+
     except KeyboardInterrupt:
         print("\\nProgram interrupted by user")
         cleanup_and_exit()

@@ -51,7 +51,7 @@ ERROR_UNCALIBRATED = 0x20
 MOTOR_MODE_NAMES: Dict[int, str] = {
     MOTOR_MODE_RESET: "Reset",
     MOTOR_MODE_CALIBRATION: "Cali",
-    MOTOR_MODE_ACTIVE: "Motor"
+    MOTOR_MODE_ACTIVE: "Motor",
 }
 
 # Reset reason codes and descriptions
@@ -70,7 +70,7 @@ RESET_REASONS: Dict[int, str] = {
     13: "RTCWDT_CPU_RESET: RTC Watch dog Reset CPU",
     14: "EXT_CPU_RESET: for APP CPU, reseted by PRO CPU",
     15: "RTCWDT_BROWN_OUT_RESET: Reset when the vdd voltage is not stable",
-    16: "RTCWDT_RTC_RESET: RTC Watch dog reset digital core and rtc module"
+    16: "RTCWDT_RTC_RESET: RTC Watch dog reset digital core and rtc module",
 }
 
 # Motor status messages
@@ -94,19 +94,19 @@ MOTOR_MESSAGES: Dict[int, str] = {
     312: "[Motor] Detect calibration command.",
     313: "[Motor] Motor initialized.",
     314: "[Motor] Swith-off request sent!",
-    315: "[Motor] Restart!"
+    315: "[Motor] Restart!",
 }
 
 
 def interpret_motor_mode(mode: int) -> str:
     """Interpret motor operating mode code.
-    
+
     Args:
         mode: Motor mode code (0=Reset, 1=Calibration, 2=Motor)
-        
+
     Returns:
         Human-readable string describing the motor mode
-        
+
     Example:
         >>> interpret_motor_mode(2)
         'Motor'
@@ -118,16 +118,16 @@ def interpret_motor_mode(mode: int) -> str:
 
 def interpret_motor_error(error: int) -> str:
     """Interpret motor error flags.
-    
+
     Processes a bitmask of error conditions and returns a string
     describing all active error conditions.
-    
+
     Args:
         error: Bitmask containing error flags
-        
+
     Returns:
         String describing all active error conditions, separated by spaces
-        
+
     Example:
         >>> interpret_motor_error(0x01)
         'UNDERVOLTAGE'
@@ -135,7 +135,7 @@ def interpret_motor_error(error: int) -> str:
         'UNDERVOLTAGE OVER CURRENT'
     """
     error_flags = []
-    
+
     if error & ERROR_UNDERVOLTAGE:
         error_flags.append("UNDERVOLTAGE")
     if error & ERROR_OVERCURRENT:
@@ -148,21 +148,21 @@ def interpret_motor_error(error: int) -> str:
         error_flags.append("HALL ENCODER ERROR")
     if error & ERROR_UNCALIBRATED:
         error_flags.append("UNCALIBRATED")
-    
+
     return " ".join(error_flags)
 
 
 def interpret_reset_reason(reason: int) -> str:
     """Interpret system reset reason code.
-    
+
     Converts ESP32 reset reason codes into human-readable descriptions.
-    
+
     Args:
         reason: Reset reason code from ESP32 system
-        
+
     Returns:
         Human-readable description of the reset reason
-        
+
     Example:
         >>> interpret_reset_reason(1)
         'POWERON_RESET: Vbat power on reset'
@@ -174,19 +174,19 @@ def interpret_reset_reason(reason: int) -> str:
 
 def interpret_motor_msg(msg: int) -> str:
     """Interpret motor status message code.
-    
+
     Converts numeric motor status codes into descriptive messages
     for logging and user feedback.
-    
+
     Args:
         msg: Motor message code
-        
+
     Returns:
         Human-readable message string
-        
+
     Raises:
         KeyError: If the message code is not recognized
-        
+
     Example:
         >>> interpret_motor_msg(301)
         '[Motor] Motor enabled.'
@@ -196,5 +196,6 @@ def interpret_motor_msg(msg: int) -> str:
     try:
         return MOTOR_MESSAGES[msg]
     except KeyError:
-        raise KeyError(f"Unknown motor message code: {msg}. "
-                      f"Valid codes are: {list(MOTOR_MESSAGES.keys())}")
+        raise KeyError(
+            f"Unknown motor message code: {msg}. " f"Valid codes are: {list(MOTOR_MESSAGES.keys())}"
+        )
