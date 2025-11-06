@@ -119,6 +119,10 @@ class Interface:
         self.update_config(cfg)
         # Simulation rendering (should be moved to configuration in future)
         self.enable_sim_render = True
+        
+        # Control whether Interface sets up its own signal handler
+        # Set to False if the calling code will handle signals
+        self.setup_signal_handler = getattr(cfg.interface, 'setup_signal_handler', True)
 
         # Timing and data tracking
         self.start_time = time.time()
@@ -139,7 +143,8 @@ class Interface:
         self.ready_to_go = False
 
         # Setup signal handling and UI
-        signal.signal(signal.SIGINT, self.signal_handler)
+        if self.setup_signal_handler:
+            signal.signal(signal.SIGINT, self.signal_handler)
         self.kb = KBHit()
         print("[e] enable; [d] disable")
         self.live = Live(self._generate_table(), refresh_per_second=REFRESH_RATE)
@@ -991,13 +996,25 @@ class Interface:
         except Exception as e:
             print(f"[ERROR] Error during shutdown: {e}")
         finally:
-            # Ensure UI is closed
-            try:
-                self.live.__exit__(None, None, None)
-            except:
-                pass
+            # Ensure UI is closed and cursor is restored
+            self._cleanup_display()
             print("[Server] Shutdown complete")
             sys.exit(0)
+
+    def _cleanup_display(self) -> None:
+        """Cleanup Rich Live display and restore terminal state."""
+        if hasattr(self, "live"):
+            try:
+                self.live.__exit__(None, None, None)
+            except Exception as e:
+                print(f"[ERROR] Failed to exit Live display: {e}")
+        
+        # Explicitly show cursor as a safety measure
+        try:
+            sys.stdout.write('\033[?25h')  # ANSI escape code to show cursor
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"[ERROR] Failed to restore cursor: {e}")
 
     def _shutdown_subsystems(self) -> None:
         """Shutdown all subsystems gracefully."""
@@ -1035,6 +1052,10 @@ class Interface:
                 self.log_file.close()
             except Exception as e:
                 print(f"[ERROR] Failed to close log file: {e}")
+
+    def __del__(self) -> None:
+        """Destructor to ensure terminal state is restored."""
+        self._cleanup_display()
 
     def ready(self) -> bool:
         """Check if system is ready for operation.
